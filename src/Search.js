@@ -19,22 +19,38 @@ class SearchForm extends Component {
     this.delayedCallback(event);
   }
 
+  sortBooks = (book, shelf) => {
+      book.shelf = shelf;
+      this.props.sortBooks(book, shelf);
+  }
+
   updateResults = (query) => {
     if(query) {
       BooksAPI.search(query).then((searchQuery) => {
+      this.updateShelves(searchQuery);
       this.setState({ searchQuery : searchQuery })
     }).catch((error) => {
         this.setState({ searchQuery : [] })
         console.log('Error on search request')
         })
-    } else {
+    }
+    else {
       console.log('No search')
       this.setState({ searchQuery : [] })
       }
+
   }
 
-  render() {
+    updateShelves = (array) => {
+        array.forEach(book => {
+            const matching = this.props.books.filter(b => b.id === book.id);
+            if(matching.length > 0) {
+                book.shelf = matching[0].shelf;
+            }
+        });
+    }
 
+  render() {
       return (
         <div className="list-books">
 
@@ -57,7 +73,7 @@ class SearchForm extends Component {
             this.state.searchQuery.map((searchResults) => (
             <li key={searchResults.id ? searchResults.id : ''}>
               <Book book={searchResults}
-                sortBooks={this.props.sortBooks}
+                sortBooks={this.sortBooks}
               />
             </li>
           )) : <li className="no-results">No Results Found</li>}
